@@ -1,0 +1,64 @@
+\section{Logistic Regression \hpoints{50}}
+
+\paragraph{Description.} In this part of the assignment, you will implement a very useful binary classifier Logistic Regression to work with the task in Problem 2. 
+
+\paragraph{Your task.} Logistic Regression is a classifier used to estimate the probability of a response (label) based on one or more predictors (features). These probabilities are computed by exponentiating the score $\langle \textbf{w},\textbf{x}\rangle$, 
+\[P(Y=1 \mid \textbf{x},\textbf{w}) = \frac{1}{1 + \exp^{-\textbf{w}^T\textbf{x}}}\]
+\[P(Y=0 \mid \textbf{x},\textbf{w}) = \frac{\exp^{-\textbf{w}^T\textbf{x}}}{1 + \exp^{-\textbf{w}^T\textbf{x}}}\]
+, where $\textbf{x}$ is an observation whose label is to be predicted, and $\textbf{w}$ is a vector of weights, with each coordinate of the vector corresponding to a feature of $\textbf{x}$.  Thus we can write the likelihood function,
+\[\prod_{i=1}^N(P(y_i=1 \mid \textbf{x}_i, \textbf{w}))^{y_i}(1-P(y_i=1 \mid \textbf{x}_i, \textbf{w}))^{1-y_i}\]
+We later need to convert the likelihood function to log-likelihood function.
+\begin{align}
+    \ell(\textbf{w}) &= \sum\limits_{i=1}^{N} [ y_i \log P(y_i=1 \mid \textbf{x}_i, \textbf{w}) + (1-y_i)\log(1-P(y_i=1 \mid \textbf{x}_i, \textbf{w}))] \\
+    &= \sum\limits_{i=1}^N [ y_i(\textbf{w}^T\textbf{x}_i) - \log (1 + \exp(\textbf{w}^T\textbf{x}_i))]
+\end{align}
+Unfortunately, these is no closed form expression for computing this weight vector $\textbf{w}$ that maximizes the log likelihood over the set of observations and responses (training set). Luckily for us, this loss function is concave, thus allowing us to implement a powerful optimization technique called gradient ascent. We can compute the gradient 
+\[\nabla_\textbf{w}\ell(\textbf{w}) = \sum\limits_{i=1}^Ny_i\textbf{x}_i-\frac{\textbf{x}_i}{1+\exp(-\textbf{w}^T\textbf{x}_i)}\]
+Your task in this section is to implement the functions {\tt gradient\_ascent\_fixed.m}, {\tt gradient\_ascent\_decay.m}, {\tt logistic\_regression.m}, {\tt logistic\_xval\_error.m}
+({\bf see each file for exact specifications}):
+
+
+\begin{itemize}
+\item {\tt gradient\_ascent\_fixed.m}. In this function, you shall implement the vanilla gradient ascent algorithm, with a constant step size. In gradient ascent, the choice of step size is crucial, and in this section, you shall explore its effect on the performance of your algorithm. You will have to experiment a little with the choice of the step size to ensure good performance. Set the step size to a value you found to work best empirically. 
+
+\item {\tt gradient\_ascent\_decay.m} Implement gradient ascent with step size that decays over time. You will have to experiment a little with the choice of the initial step size to ensure good performance. Did you notice any improvement over your implementation of gradient ascent with a constant step size? What do you think was the cause of the improvement? Plot the evolution of the zero-one loss over training data as the gradient ascent proceeds i.e. plot the training error on the Y axis, and iterations on the X axis for both implementations of gradient ascent (fixed step size and decaying step size) in the same plot. Do this for both the noiseless and noisy data set.
+
+\paragraph{Your answer:}
+ ~\\
+ 
+ {\tt  [Figure on original data]}
+ \\    
+ 
+ {\tt [Figure on noisy data]}
+ \\
+  
+  There is an improvement because \ldots  
+  \\
+
+
+\item Add an extra feature to your data that is always set to 1, and perform gradient ascent on this new data. This corresponds to adding a constant to the scores, i.e. $\langle \textbf{w},\textbf{x}\rangle + c$. Did you notice any improvement in performance? What do you think happened that caused this improvement? Plot the evolution of the zero-one loss over training data as the gradient ascent proceeds i.e. plot the training error on the Y axis, and iterations on the X axis over the data without the extra feature, and with the extra feature in the same plot. Do this for both the noiseless and noisy dataset.
+
+\paragraph{Your answer:}
+ ~\\
+ 
+ {\tt  [Figure on original data]}
+ \\    
+ 
+ {\tt [Figure on noisy data]}
+ \\
+  
+ There is an improvement because \ldots  
+  \\
+
+\item Implement {\tt logistic\_regression.m} and {\tt logistic\_xval\_error.m}. For both the original data and the noisy, compute both the $N$-fold error on the training set, for $N = \{3, 5, 9, 15\}$, and the test error. What trend do you observe? Please plot the cross-validation error and test error in the same figure.
+
+\paragraph{Your answer:}
+ ~\\
+ 
+ {\tt  [Figure on original data]}
+ \\    
+ 
+ {\tt [Figure on noisy data]}
+
+\end{itemize}
+

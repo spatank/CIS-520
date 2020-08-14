@@ -1,0 +1,288 @@
+\documentclass[english]{article}
+
+\input{shared/util}
+\newcommand{\pr}{\mathbf{P}}  
+\newcommand{\vw}{\mathbf{w}}
+\newcommand{\vx}{\mathbf{x}}
+
+\title{CIS 520, Machine Learning, Fall 2018: Assignment 3}
+\date{}
+\author{Simran Arora, Shubhankar Patankar}
+
+\begin{document}
+\maketitle
+
+\section{Na{\"i}ve Bayes as a Linear Classifier}
+
+\begin{enumerate}
+\item Conditional probability of $\bx$ given $y$, \\
+$$\Pr(\bx | y = 1) = \prod_{i = 1}^{n}\Pr(x_i | y = 1)$$
+$\Pr(x_i | y = 1) = \alpha_i$ if $x_i = 1$ or $(1 - \alpha_i)$ if $x_i = 0$
+
+\begin{align*}
+\therefore \Pr(x_i | y = 1) {}={} & ({\alpha_i})^{I[x_i = 1]}({1 - \alpha_i})^{I[x_i = 0]} \\
+& = ({\alpha_i})^{I[x_i = 1]}({1 - \alpha_i})^{1 - I[x_i = 1]} \\
+& = ({\alpha_i})^{x_i}({1 - \alpha_i})^{1 - x_i} \\
+\end{align*}
+\begin{align*}
+\therefore \Pr(\bx | y = 1) {}={} \prod_{i = 1}^{n}({\alpha_i})^{x_i}({1 - \alpha_i})^{1 - x_i}
+\end{align*}
+Similarly,
+\begin{align*}
+\therefore \Pr(\bx | y = -1) {}={} \prod_{i = 1}^{n}({\beta_i})^{x_i}({1 - \beta_i})^{1 - x_i}
+\end{align*}
+
+\item  For the MLE of the parameters:\\
+To solve for $\hat{p}$ our goal is to maximize the log-likelihood of observing the data ($argmax_{p} \sum_{i=1}^{m} log p (x_i | y)$). We know that $P(y=1) = p$. This gives us the problem:
+$$argmax_{p} \sum_{i=1}^{m} \bigg(\frac{1 + y_i}{2}\bigg)log[(p)Pr(x_i|y_i = 1)] + \bigg(\frac{1 - y_i}{2}\bigg)log[(1-p)Pr(x_i|y_i = -1)]$$
+Taking the derivative with respect to p:
+$$\frac{d}{dp} \bigg\{\sum_{i=1}^{m}\bigg\{ \bigg(\frac{1 + y_i}{2}\bigg)log[(p)Pr(x_i|y_i = 1)] + \bigg(\frac{1 - y_i}{2}\bigg)log[(1-p)Pr(x_i|y_i = -1)]\bigg\}\bigg\}$$
+$$= \sum_{i=1}^{m} \bigg\{ \bigg(\frac{1 + y_i}{2}\bigg)\frac{1}{(p)Pr(x_i|y_i = 1)}Pr(x_i|y_i = 1) + \bigg(\frac{1 - y_i}{2}\bigg) \frac{1}{(1-p)Pr(x_i|y_i = -1)}(-Pr(x_i|y_i = -1)) \bigg\}$$
+$$= \sum_{i=1}^{m} \bigg\{ \bigg(\frac{1 + y_i}{2}\bigg)\frac{1}{p} - \bigg(\frac{1 - y_i}{2}\bigg) \frac{1}{(1-p)} \bigg\}$$
+Set this equal to $0$:
+$$\sum_{i=1}^{m} \bigg\{ \bigg(\frac{1 + y_i}{2}\bigg)\frac{1}{p} - \bigg(\frac{1 - y_i}{2}\bigg) \frac{1}{(1-p)} \bigg\} = 0$$
+$$(1-p)\sum_{i=1}^{m} \bigg(\frac{1 + y_i}{2}\bigg) - (p) \sum_{i=1}^{m} \bigg(\frac{1 - y_i}{2}\bigg) = 0$$
+$$\sum_{i=1}^{m} \bigg(\frac{1 + y_i}{2}\bigg) - (p)\sum_{i=1}^{m} \bigg(\frac{1 + y_i}{2}\bigg) - (p) \sum_{i=1}^{m} \bigg(\frac{1 - y_i}{2}\bigg) = 0$$
+$$\sum_{i=1}^{m} \bigg(\frac{1 + y_i}{2}\bigg) - (p)\sum_{i=1}^{m} \bigg\{ \bigg(\frac{1 + y_i}{2}\bigg) + \bigg(\frac{1 - y_i}{2}\bigg)\bigg\} = 0$$
+$$\sum_{i=1}^{m} \bigg(\frac{1 + y_i}{2}\bigg) - (p)\sum_{i=1}^{m} \bigg(\frac{1}{2} + \frac{1}{2}\bigg) = 0$$
+$$\sum_{i=1}^{m} \bigg(\frac{1 + y_i}{2}\bigg) - (p)\sum_{i=1}^{m} 1 = 0$$
+$$\sum_{i=1}^{m} \bigg(\frac{1 + y_i}{2}\bigg) - (p)(m) = 0$$
+$$\frac{\sum_{i=1}^{m} \bigg(\frac{1 + y_i}{2}\bigg)}{m} = p$$
+We know that$\sum_{i=1}^{m} (\frac{1 + y_i}{2})$ equals the number of occasions on which $y_i = 1$ because if $y_i=1$, $\frac{1 + y_i}{2} =1$ and if $y_i = 0$, $\frac{1 + y_i}{2} = 0$. Thus, the $\hat{p} = \frac{\sum_{i=1}^{m} (\frac{1 + y_i}{2})}{m}$ means that $\hat{p}$ is given by the number of occurrences of $y_i = 1$ divided by the total number of data points, which intuitively makes sense because $p = Pr(y_i = 1)$. \newline\newline
+To solve for $\hat{\alpha_i}$, our goal is to maximize the log-likelihood of observing the data with respect to $\alpha_i$. 
+$$\frac{d}{d\alpha_i} \bigg\{\sum_{i=1}^{m} \bigg\{ \bigg(\frac{1 + y_i}{2}\bigg)log[(p)Pr(x_i|y_i = 1)] + \bigg(\frac{1 - y_i}{2}\bigg)log[(1-p)Pr(x_i|y_i = -1)]\bigg\} \bigg\}$$
+
+$$= \frac{d}{d\alpha_i} \bigg\{ \sum_{i=1}^{m} \bigg\{ \bigg(\frac{1 + y_i}{2}\bigg)log\bigg[p\bigg(\prod_{j=1}^{n}\alpha_j^{x_j}(1-\alpha_j)^{1-x_j}\bigg)\bigg] + \bigg(\frac{1 - y_i}{2}\bigg)log\bigg[(1-p)\bigg(\prod_{j=1}^{n}\beta_j^{x_j}(1-\beta_j)^{1-x_j})\bigg)\bigg] \bigg\} \bigg\}$$
+
+$$= \frac{d}{d\alpha_i} \bigg\{ \sum_{i=1}^{m} \bigg\{ \bigg(\frac{1 + y_i}{2}\bigg)\bigg[log(p) + \sum_{j=1}^{n}log(\alpha_j^{x_j}(1-\alpha_j)^{1-x_j})\bigg] + \bigg(\frac{1 - y_i}{2}\bigg)log\bigg[(1-p)(\prod_{j=1}^{n}\beta_j^{x_j}(1-\beta_j)^{1-x_j})\bigg] \bigg\} \bigg\}$$
+
+$$= \frac{d}{d\alpha_i} \bigg\{ \sum_{i=1}^{m} \bigg\{ \bigg(\frac{1 + y_i}{2}\bigg)\bigg[log(p) + \sum_{j=1}^{n}(x_jlog(\alpha_j) + (1-x_j)log(1-\alpha_j))\bigg] + \bigg(\frac{1 - y_i}{2}\bigg)log\bigg[(1-p)(\prod_{j=1}^{n}\beta_j^{x_j}(1-\beta_j)^{1-x_j})\bigg] \bigg\} \bigg\}$$
+
+$$= \sum_{i=1}^{m} \bigg(\frac{1 + y_i}{2}\bigg)\bigg[\sum_{j=1}^{n} \frac{d}{d\alpha_i}\bigg(x_jlog(\alpha_j) + (1-x_j)log(1-\alpha_j)\bigg)\bigg]$$
+
+$$= \sum_{i=1}^{m} \bigg(\frac{1 + y_i}{2}\bigg)\bigg\{\sum_{j=1}^{n}\bigg[\bigg(\frac{x_j}{\alpha_i}\bigg) - \bigg(\frac{1-x_j}{1-\alpha_i}\bigg)\bigg]\bigg\}$$
+
+Setting this derivative equal to 0, we get:
+$$ \sum_{i=1}^{m}\bigg(\frac{1 + y_i}{2}\bigg) \bigg[\sum_{j=1}^{n}\bigg(\frac{x_j}{\alpha_i}\bigg) - \sum_{j=1}^{n}\bigg(\frac{1-x_j}{1-\alpha_i}\bigg)\bigg] = 0$$
+
+$$(1-\alpha_i)\bigg(\sum_{i=1}^{m}\frac{1 + y_i}{2}\sum_{j=1}^{n}x_j\bigg) = (\alpha_i)\bigg(\sum_{i=1}^{m}\frac{1 + y_i}{2}\sum_{j=1}^{n}\bigg(1-\sum_{j=1}^{n}x_j\bigg)\bigg)$$
+
+$$\bigg(\sum_{i=1}^{m}\frac{1 + y_i}{2}\sum_{j=1}^{n}x_j\bigg) - (\alpha_i)\bigg(\sum_{i=1}^{m}\frac{1 + y_i}{2}\sum_{j=1}^{n}x_j\bigg) = (\alpha_i)\bigg(\sum_{i=1}^{m}\frac{1 + y_i}{2}\sum_{j=1}^{n}1\bigg)- (\alpha_i)\bigg(\sum_{i=1}^{m}\frac{1 + y_i}{2}\sum_{j=1}^{n}x_j\bigg)$$
+
+$$\bigg(\sum_{i=1}^{m}\frac{1 + y_i}{2}\sum_{j=1}^{n}x_j\bigg) = (\alpha_i)\bigg(\sum_{i=1}^{m}\frac{1 + y_i}{2}\sum_{j=1}^{n}1\bigg)$$
+
+$$\therefore  \hat{\alpha_i} = \frac{\big(\sum_{i=1}^{m}\frac{1 + y_i}{2}\sum_{j=1}^{n}x_j\big)}{\big(\sum_{i=1}^{m}\frac{1 + y_i}{2}\sum_{j=1}^{n}1\big)}$$
+
+This intuitively means that $\hat{\alpha_i}$ is the  count of observations in class $y=1$ with attribute $x_i=1$ divided by the total count of observations in class $y=1$.\newline\newline
+By symmetry to the above,  
+$$\therefore  \hat{\beta_i} = \frac{\big(\sum_{i=1}^{m}\frac{1 - y_i}{2}\sum_{j=1}^{n}x_j\big)}{\big(\sum_{i=1}^{m}\frac{1 - y_i}{2}\sum_{j=1}^{n}1\big)}$$
+$\hat{\beta_{i}}$ is the  count of observations in class $y=-1$ with attribute $x_i=1$ divided by the total count of observations in class $y=-1$.
+
+\item $h(x)$ can be written as:
+$$h(\vec{x}) = argmax_{y\in \{\pm 1\}}\hat{Pr}(y|\vec{x})$$
+This returns the $y$ class value that yields the highest probability for $\hat{Pr}(y|\vec{x})$. Want to prove that this is equivalent to the function $h'(\vec{x}) = sign(\hat{Pr}(1|\vec{x}) - \hat{Pr}(-1|\vec{x})$. \newline\newline
+If $h(\vec{x})$ returns $y=1$, then this means that $\hat{Pr}(y=1|\vec{x}) > \hat{Pr}(y = -1|\vec{x})$. Let $x = \hat{Pr}(y=1|\vec{x}) - \hat{Pr}(y = -1|\vec{x})$ in which $x > 0$. Then, $h'(\vec{x}) = sign(x)$ which thus returns $+1$. Meanwhile, if $h(\vec{x})$ returns $y=-1$, then this means that $\hat{Pr}(y=-1|\vec{x}) > \hat{Pr}(y = +1|\vec{x})$. Let $x = \hat{Pr}(y=-1|\vec{x}) - \hat{Pr}(y = +1|\vec{x})$ in which $x < 0$. Then, $h'(\vec{x}) = sign(x)$ which thus returns $-1$. Thus we can see that $h(\vec{x})$ and $h'(\vec{x})$ always return the same result, and thus they are equivalent. 
+
+\item $\vw$ and $b$ from $h(x)$:
+ We want to show that $h(\vec{x}) = sign(\vec{w}^T\vec{x} + b)$. First by first using Bayes rule and then the total probability formula: $$\hat{Pr}(y=a|\vec{x}) = \frac{Pr(\vec{x}|y=a)Pr(y=a)}{Pr(\vec{x})}$$
+We want the $a$ class value that maximizes the probability:
+$$argmax_{y} \hat{Pr}(y=a|\vec{x}) = argmax_{y}\frac{Pr(\vec{x}|y=a)Pr(y=a)}{Pr(\vec{x})}$$
+Since the denominator of this does not depend on $y$, this is equivalent to: $$argmax_{y}Pr(\vec{x}|y=a)Pr(y=a)$$
+From equation $2$ we can rearrange to get: 
+$$log(Pr(\vec{x}|y=1)) + log(Pr(y=1)) - log(Pr(\vec{x}|y=-1)) - log(Pr(y=-1))$$
+Because the activation of $log(\alpha_i)$ vs $log(\beta_i)$ depends on the value of $\vec{x}$, whether it's positive or $0$, we can rearrange this to be: 
+$$(log(\alpha_i) - log(\beta_i))^T\vec{x} + (log(p) - log(1-p))$$
+Thus, we get that $\vec{w} = (log(\alpha_i) - log(\beta_i))$ and $b = (log(p) - log(1-p))$.
+
+\end{enumerate}
+
+\section{Multiclass Logistic Regression}
+
+\begin{enumerate} 
+\item For multi-class classification, assuming there are $C$ different classes, for each class,
+
+$$\pr(C_j \mid X = \mathbf{x}) = \frac{\exp\{\vw_j^T\vx\}}{\sum_{k=1}^{C} \exp\{\vw_k^T\vx\}}  \ \ \forall j \in \{1, 2, .., C\}$$
+Let the training data have $N$ points and $P$ features for each point. The target matrix $T$ has dimensions $N \times P$. Using a 1-of-C coding scheme, each row of $T$ has zeros in all positions except the column corresponding to the right class. 
+The probability of observing the matrix $T$ is the probability of observing each of its elements. Therefore, it can be written as follows:
+
+\begin{align*}
+\pr(T \mid \vw_1, \vw_2, \dots ,\vw_C, \vx_1, \vx_2, \dots \vx_N)  {}={} & \pr(C_1 \mid \vx_1) \dots \pr(C_C \mid \vx_1) \dots \\
+         & \pr(C_1 \mid \vx_2) \dots \pr(C_C \mid \vx_2) \dots \\
+          & \dots \\
+         & \pr(C_1 \mid \vx_N) \dots \pr(C_C \mid \vx_N)
+\end{align*}
+
+Each term in the product above has the appropriate weight vector as part of the argument that has been dropped for clarity.
+
+\begin{align*}
+\therefore \pr(T \mid \vw_1, \vw_2, \dots ,\vw_C, \vx_1, \vx_2, \dots \vx_N)  {}={} & \prod_{n = 1}^{N}\prod_{j = 1}^{C} {\pr(C_j \mid \vx_n)}^{t_{nj}}
+\end{align*}
+
+The exponent $t_{nj}$ is added to reflect the 1-of-C coding scheme. Each row has only one position that is non-zero. For instance, assuming that the first data point belongs to class 3, $t_{13} = 1$ and $t_{1, k \neq 3} = 0$. The terms in the product that have 0 as the exponent equal 1 and do not contribute to the likelihood. 
+The log likelihood can then be written as follows:
+
+\begin{align*}
+L(\vw_1, ..., \vw_C)  {}={} & \sum_{n = 1}^{N}\sum_{j = 1}^{C} ({t_{nj}) log\big[{\pr(C_j \mid \vx_n)}\big]}
+\end{align*}
+
+With the logarithm the products change into summations and the exponent drops to the front.
+Adding an L2 regularization term, in which each weights vector is penalized the same amount $\lambda$, gives:
+
+\begin{align*}
+L(\vw_1, ..., \vw_C)  {}={} & \sum_{n = 1}^{N}\sum_{j = 1}^{C} ({t_{nj}) log\big[{\pr(C_j \mid \vx_n)}\big]} - \lambda \sum_{j = 1}^{C} \| \vw_j\|_{2}^{2} \\
+& = \sum_{n = 1}^{N}\sum_{j = 1}^{C} ({t_{nj}) log\bigg[\frac{\exp\{\vw_j^T\vx_n\}}{\sum_{k=1}^{C} \exp\{\vw_k^T\vx_n\}}\bigg]} - \lambda \sum_{j = 1}^{C} \| \vw_j\|_{2}^{2} \\
+& = \sum_{n = 1}^{N}\sum_{j = 1}^{C} ({t_{nj}){\vw_j^T}{\vx_n}} -   \sum_{n = 1}^{N}\sum_{j = 1}^{C} (t_{nj})  log\bigg[ \sum_{k = 1}^{C} \exp(\vw_k^T\vx_n) \bigg] - \lambda \sum_{j = 1}^{C} \| \vw_j\|_{2}^{2} 
+\end{align*}
+
+\item Differentiating with respect to $\vw_j$,
+\begin{align*}
+\frac{\partial L(\vw_1, ..., \vw_C)}{\partial \vw_j}  {}={} & \sum_{n = 1}^{N}{t_{nj}{\vx_n}}  -\sum_{n = 1}^{N} \bigg[\frac{\exp({\vw_j^T}{\vx_n})}{\sum_{k=1}^{C} \exp\{\vw_k^T\vx_n\}}\bigg]{\vx_n} - 2\lambda \vw_j
+\end{align*}
+
+The second term in the derivative follows from the observation that in terms where $k \neq j$, the chain rule causes the term to disappear. This only leaves the $k = j$ case to differentiate according to the chain rule.
+\begin{align*}
+\frac{\partial L(\vw_1, ..., \vw_C)}{\partial \vw_j}  {}={} & \sum_{n = 1}^{N}\bigg[{t_{nj} - \bigg(\frac{\exp({w_j^T}{\vx_n})}{\sum_{k=1}^{C} \exp\{\vw_k^T\vx_n\}}\bigg)\bigg]{\vx_n}} - 2\lambda \vw_j
+\end{align*}
+
+\item The update equation for the weights vector $\vw_j$ can be written as follows:
+
+\begin{align*}
+\vw_{j+1}  {}={} & \vw_j + \eta \frac{\partial L(\vw_1, ..., \vw_C)}{\partial \vw_j} \\
+& = \vw_j + \eta \bigg\{\sum_{n = 1}^{N}\bigg[{t_{nj} - \bigg(\frac{\exp({w_j^T}{\vx_n})}{\sum_{k=1}^{C} \exp\{\vw_k^T\vx_n\}}\bigg)\bigg]{\vx_n}} - 2\lambda \vw_j\bigg\}
+\end{align*}
+
+\item The Hessian for the likelihood function is positive definite implying that the sequence of consecutive weight vectors converge.
+
+\end{enumerate}
+
+\section{Feature Selection}
+
+$$\hat{w} = \arg \min_w  \quad \|Y - Xw\|_2^2 + \lambda \|w\|_0$$
+\begin{enumerate}
+
+\item The MLE estimate for $\hat{w}_{MLE}$,
+\begin{align*}
+\frac{\partial \hat{w}}{\partial w} {}={} & \frac{\partial \big[(Y - Xw)^T(Y - Xw)\big]}{\partial w} \\
+& = \frac{\partial \big[(Y^T - w^TX^T)(Y - Xw)\big]}{\partial w} \\
+& = \frac{\partial \big[(Y^TY - w^TX^TY - w^TX^TY + w^TX^TXw)\big]}{\partial w} \\
+& = \frac{\partial \big[(Y^TY - 2w^TX^TY + w^TX^TXw)\big]}{\partial w} \\
+& = -2X^TY + 2X^TXw
+\end{align*}
+Setting equal to zero,
+\begin{align*}
+-2X^TY + 2X^TXw {}={} & 0 \\
+\end{align*}
+$$\therefore X^TX\hat{w}_{MLE} = X^TY$$
+$$\hat{w}_{MLE} = (X^TX)^{-1}X^TY$$
+For the given dataset, $\hat{w}_{MLE} = [0.9484; -0.8811; 4.4696]$
+
+\item $\lambda = 1$ for L2-penalty,
+$$\hat{w}_{MLE} = [0.9029; -0.8715; 4.3416]$$
+
+\item $\lambda = 1$ for L1-penalty,
+$$\hat{w}_{MLE} = [0.9231; -0.8673; 4.4565]$$
+
+\item $\lambda = 1$ for L0-penalty,
+The eight combinatorial cases for the elements of the weight vector to be zero are the following: $(0; 0; 0)_1, (1; 0; 0)_2, (0; 1; 0)_3, (0; 0; 1)_4, (1; 1; 0)_5, (1; 0; 1)_6, (0; 1; 1)_7, (1; 1; 1)_8$. $1$ is used as a stand-in for some non-zero weight value.
+For each element of the weight vectors that is zero, the corresponding feature in the training data has no influence on the label. The eight optimized weight vectors computed are as follows:
+$$\hat{w}_{{MLE}_1} = (0; 0; 0)$$
+$$\hat{w}_{{MLE}_2} = (1.2370; 0; 0)$$
+$$\hat{w}_{{MLE}_3} = (0; -1.6033; 0)$$
+$$\hat{w}_{{MLE}_4} = (0; 0; 4.5794)$$
+$$\hat{w}_{{MLE}_5} = (0.9629; -1.4856; 0)$$
+$$\hat{w}_{{MLE}_6} = (1.1084; 0; 4.5628)$$
+$$\hat{w}_{{MLE}_7} = (0; -0.9967; 4.4712)$$
+$$\hat{w}_{{MLE}_8} = (0.9485; -0.8810; 4.4696)$$
+The cost function is the lowest when all three features are included in the model (case 8). 
+$$\therefore \hat{w}_{{MLE}} = (0.9485; -0.8810; 4.4696)$$
+
+\item Ridge regression shrinks the weights closer to $0$ compared to L0. The applied shrinkage is proportional to how far the weights are from $0$. As a result, bigger weights are shrunk more. In general, it can be seen that the L2 penalty causes the MLE weights to be shrunk to values closer to $0$ compared to the L0 and L1 penalties. 
+L0 shrinks all weights within a threshold to $0$ leaving others unchanged. In our case, the penalty $\lambda$ is not large enough to drive any of the weights to $0$. Lasso shrinks all weights within a threshold to $0$ and shrinks the others by a constant amount. For the given data, the penalty is not large enough to drive any of the weights to $0$ for lasso. Based on this, it is reasonable that the weights under L2 are closest to $0$ and the L1 weights are generally between L0 and L2. 
+The MLE estimate of the weights is the largest since there is no regularization penalty that causes shrinkage. 
+
+\item Trade-off between minimizing the SSE and the magnitude of $\hat{w}$.
+\begin{enumerate}
+
+\item $$||\hat{w}_{MLE}||_2^2  \; / \; ||Y-X\hat{w}_{MLE}||_2^2 = 0.0109$$.
+
+\item Effect of adding data points:
+\begin{enumerate}
+\item When more samples are added to the dataset, the SSE increases. Each new error term is squared and added to the cumulative sum of the other terms, causing the SSE to grow with the number of samples. Additionally, in any realistic data set with inherent noise, even the best prediction causes the square of the noise to be added to the SSE.
+\item The sum of the squared weights does not significantly change when more samples are introduced unless the number of samples to begin with is low. For instance, if 2 samples are added to a data set that previously contained only 1 sample, the weights for this new fit would substantially differ from the case with just the one data point. On the other hand, if the dataset has a large number of data points to begin with, adding twice as many samples might cause negligibly small changes in the sum of the squared weights. This presumes that the new samples do not have a large number of outliers.  \\
+\end{enumerate}
+
+\item $\lambda$ such that $0.8 < ||\hat{w}||_2^2 \; / \; ||\hat{w}_{MLE}||_2^2 < 0.9$.
+$$\lambda = 3$$
+
+\item $\lambda$ such that $0.4 < ||\hat{w}||_2^2 \; / \; ||\hat{w}_{MLE}||_2^2 < 0.5$.
+$$\lambda = 16$$
+\end{enumerate}
+
+\end{enumerate}
+
+
+
+
+\section{MDL}
+
+\begin{enumerate}
+\item  Estimate the three linear regressions 
+
+\begin{align*}
+  y_1& = w_1 x_1 \\
+  y_2& = w_1 x_1 + w_2 x_2 \\
+  y_3& = w_1 x_1 + w_2 x_2 + w_3 x_3  \\
+\end{align*}
+
+\begin{enumerate}
+\item the sum of square error \\
+i)   $\text{Err}_1 = 460.0579$ \\
+ii)  $\text{Err}_2 = 300.6201$\\
+iii) $\text{Err}_3 = 300.5071$\\
+
+
+\item 2 times the estimated bits to code the residual ($n \log{\frac{Error}{n}} $)  \\
+i)    $\text{ERR}\_\text{bits}_1 = 182.1230$ \\
+ii)   $\text{ERR}\_\text{bits}_2 = 142.8351$ \\
+iii)  $\text{ERR}\_\text{bits}_3 = 142.8003$ \\
+
+
+\item 2 times the estimated bits to code each residual plus model under AIC ($2*1$ bit to code each feature) \\
+i)    $\text{AIC}\_\text{bits}_1 = 184.1230$ \\
+ii)   $\text{AIC}\_\text{bits}_2 = 146.8351$ \\
+iii)  $\text{AIC}\_\text{bits}_3 = 148.8003$ \\
+
+
+\item 2 times the estimated bits to code each residual plus model under BIC  ($2*(1/2) log(n)$ bits to code each feature) \\
+i)   $\text{BIC}\_\text{bits}_1 = 188.1230$ \\
+ii)  $\text{BIC}\_\text{bits}_2 = 154.8351$ \\
+iii) $\text{BIC}\_\text{bits}_3 = 160.8003$ \\
+
+\end{enumerate}
+
+
+\item Which model has the smallest minimum description length? \\
+a) for AIC: Model 2 \\
+b) for BIC: Model 2\\
+
+
+\item  Included in the kit is a test data set; does the error on the test set for the three models
+   correspond to what is expected from MDLs?  Please compute and show the test errors and briefly explain it in one sentence. \\
+i)   $\text{Test Error}_1 = 640.3078$ \\
+ii)  $\text{Test Error}_2 = 420.1459$\\
+iii) $\text{Test Error}_3 = 422.1606$\\
+   The test error corresponds to what is expected from the MDLs since the MDL for Model 2 is the smallest. 
+
+
+\end{enumerate}
+
+%\begin{align*}
+%P(D | p, \alpha, \beta)  {}={} & \prod_{i = 1}^{m} P(\vx, y_i) \\
+%& = \prod_{i = 1}^{m} P(\vx | y_i) P(y_i) \\
+%& =  \prod_{i = 1}^{m}\bigg[P(\vx | y_i = 1)P(y_i = 1) + P(\vx | y_i = 0)P(y_i = 0)\bigg] \\
+%& = \prod_{i = 1}^{m}\bigg[\bigg(\prod_{j = 1}^{n}({\alpha_j})^{x_j}({1 - \alpha_j})^{1 - x_j}\bigg)P(y_i = 1) + \bigg(\prod_{j = 1}^{n}({\beta_j})^{x_j}({1 - \beta_j})^{1 - x_j}\bigg)P(y_i = 0)\bigg] \\
+%& = \prod_{i = 1}^{m}\bigg[\bigg(\prod_{j = 1}^{n}({\alpha_j})^{x_j}({1 - \alpha_j})^{1 - x_j}\bigg)(p) + \bigg(\prod_{j = 1}^{n}({\beta_j})^{x_j}({1 - \beta_j})^{1 - x_j}\bigg)(1-p)\bigg] 
+%\end{align*}
+
+
+\end{document}

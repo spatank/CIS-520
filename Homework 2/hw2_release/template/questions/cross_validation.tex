@@ -1,0 +1,28 @@
+\section{Cross Validation \hpoints{8}}
+
+\paragraph{Description.} In this section, we will explore a simple
+strategy to {\em estimate} test error from a training set, and then use these estimates to choose the the $K$ and $\sigma$ parameters for
+K-NN and kernel regression, respectively.
+
+The simplest way to estimate test error with a training set is {\bf
+  N-Fold Cross Validation.} To compute N-fold cross validation error,
+we use the following algorithm. Let $\mathcal{D} = (x_1, y_1), \dots,
+(x_n, y_n)$ be our training sample.
+\begin{enumerate}
+\item Divide our dataset {\em at random} into N sets of equal size, $S_1, \dots,
+  S_N$. Each set is called a {\em fold.}
+\item For $i = 1, \dots, N:$ 
+  \begin{enumerate}
+  \item Train our classifier $h(x)$ using the following training set:
+    $$\mathcal{D}_i = \bigcup_{j\ne i} S_j.$$
+    Note that $\mathcal{D}_i$ contains all folds {\em except} the $i$'th fold.
+  \item Compute error on the $i$'th fold:
+    $$\epsilon_i = \frac{1}{|S_i|}\sum_{(x,y) \in S_i} \1(h(x) \ne y).$$
+  \end{enumerate}
+\item The cross validation error is the average error across all folds:
+  $$error = \frac{1}{N} \sum_{i=1}^n \epsilon_i.$$
+\end{enumerate}
+
+\paragraph{Your task.} Your first task is to implement the step \#1 of the above algorithm in the file {\tt make\_xval\_partition.m}. 
+You will use this function repeatedly in the rest of the assignment, so it is important to make that the partition is random. 
+Please DO NOT use matlab built-in function crossvalind. {\bf See the instructions in {\tt make\_xval\_partition.m} for the specifications of the function.}
